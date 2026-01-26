@@ -47,3 +47,23 @@ export interface Draft {
 export interface DraftsData {
   drafts: Draft[];
 }
+
+export interface Learning {
+  id: string;
+  tweetId: string;
+  tweetUrl: string;
+  author: string;
+  authorHandle: string;
+  originalContent: string;
+  summary: string;
+  keyPoints: string[];
+  category: 'ai' | 'crypto' | 'marketing' | 'product' | 'other';
+  status: 'unread' | 'reading' | 'done';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LearningsData {
+  learnings: Learning[];
+  lastCheckedBookmarkId?: string;
+}
