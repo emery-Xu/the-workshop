@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Mission Control",
+  title: "The Workshop",
   description: "Task, Ideas, and Notes Dashboard",
 };
 

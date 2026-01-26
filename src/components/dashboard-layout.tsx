@@ -22,7 +22,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
           <MenuIcon className="h-5 w-5" />
         </Button>
-        <h1 className="ml-3 text-lg font-semibold tracking-tight">Mission Control</h1>
+        <h1 className="ml-3 text-lg font-semibold tracking-tight">The Workshop</h1>
       </div>
 
       {/* Mobile sidebar overlay */}
