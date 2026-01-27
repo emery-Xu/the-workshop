@@ -133,9 +133,9 @@ export default function TasksPage() {
   };
 
   const groupedTasks = {
-    todo: tasks.filter((t) => t.status === 'todo'),
-    'in-progress': tasks.filter((t) => t.status === 'in-progress'),
-    done: tasks.filter((t) => t.status === 'done'),
+    todo: tasks.filter((t: Task) => t.status === 'todo'),
+    'in-progress': tasks.filter((t: Task) => t.status === 'in-progress'),
+    done: tasks.filter((t: Task) => t.status === 'done'),
   };
 
   return (
@@ -164,7 +164,7 @@ export default function TasksPage() {
               </span>
             </div>
             <div className="space-y-2">
-              {groupedTasks[status].map((task) => (
+              {groupedTasks[status].map((task: Task) => (
                 <div
                   key={task.id}
                   className="group rounded-md border border-border bg-card p-3 transition-colors hover:border-border/80"

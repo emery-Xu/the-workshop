@@ -55,6 +55,9 @@ app.get('/api/tasks', (req, res) => {
 app.post('/api/tasks', (req, res) => {
   const data = readData('tasks.json');
   const newTask = req.body;
+  newTask.id = newTask.id || Date.now().toString();
+  newTask.createdAt = newTask.createdAt || new Date().toISOString();
+  newTask.updatedAt = new Date().toISOString();
   data.push(newTask);
   writeData('tasks.json', data);
   res.json(newTask);
@@ -64,9 +67,9 @@ app.put('/api/tasks/:id', (req, res) => {
   const data = readData('tasks.json');
   const index = data.findIndex(t => t.id === req.params.id);
   if (index !== -1) {
-    data[index] = req.body;
+    data[index] = { ...data[index], ...req.body, updatedAt: new Date().toISOString() };
     writeData('tasks.json', data);
-    res.json(req.body);
+    res.json(data[index]);
   } else {
     res.status(404).json({ error: 'Task not found' });
   }
@@ -81,12 +84,21 @@ app.delete('/api/tasks/:id', (req, res) => {
 
 // Ideas
 app.get('/api/ideas', (req, res) => {
-  res.json(readData('ideas.json'));
+  const data = readData('ideas.json');
+  res.json(data.map(idea => ({
+    id: idea.id || Date.now().toString(),
+    title: idea.title || idea.content?.substring(0, 50),
+    description: idea.description || '',
+    category: idea.category || 'other',
+    createdAt: idea.createdAt || new Date().toISOString(),
+  })));
 });
 
 app.post('/api/ideas', (req, res) => {
   const data = readData('ideas.json');
   const newIdea = req.body;
+  newIdea.id = newIdea.id || Date.now().toString();
+  newIdea.createdAt = newIdea.createdAt || new Date().toISOString();
   data.push(newIdea);
   writeData('ideas.json', data);
   res.json(newIdea);
@@ -101,12 +113,29 @@ app.delete('/api/ideas/:id', (req, res) => {
 
 // Drafts
 app.get('/api/drafts', (req, res) => {
-  res.json(readData('drafts.json'));
+  const data = readData('drafts.json');
+  res.json(data.map(draft => ({
+    id: draft.id || Date.now().toString(),
+    title: draft.title || draft.content?.substring(0, 50) || 'Untitled',
+    content: draft.content || '',
+    status: draft.status || 'draft',
+    author: draft.author || 'jarvis',
+    createdAt: draft.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  })));
 });
 
 app.post('/api/drafts', (req, res) => {
   const data = readData('drafts.json');
-  const newDraft = req.body;
+  const newDraft = {
+    id: req.body.id || Date.now().toString(),
+    title: req.body.title || req.body.content?.substring(0, 50) || 'Untitled',
+    content: req.body.content || '',
+    status: req.body.status || 'draft',
+    author: req.body.author || 'jarvis',
+    createdAt: req.body.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
   data.push(newDraft);
   writeData('drafts.json', data);
   res.json(newDraft);
@@ -116,9 +145,13 @@ app.put('/api/drafts/:id', (req, res) => {
   const data = readData('drafts.json');
   const index = data.findIndex(d => d.id === req.params.id);
   if (index !== -1) {
-    data[index] = req.body;
+    data[index] = {
+      ...data[index],
+      ...req.body,
+      updatedAt: new Date().toISOString(),
+    };
     writeData('drafts.json', data);
-    res.json(req.body);
+    res.json(data[index]);
   } else {
     res.status(404).json({ error: 'Draft not found' });
   }
@@ -133,12 +166,25 @@ app.delete('/api/drafts/:id', (req, res) => {
 
 // Notes
 app.get('/api/notes', (req, res) => {
-  res.json(readData('notes.json'));
+  const data = readData('notes.json');
+  res.json(data.map(note => ({
+    id: note.id || Date.now().toString(),
+    title: note.title || 'Untitled',
+    content: note.content || '',
+    date: note.date || new Date().toISOString().split('T')[0],
+    createdAt: note.createdAt || new Date().toISOString(),
+  })));
 });
 
 app.post('/api/notes', (req, res) => {
   const data = readData('notes.json');
-  const newNote = req.body;
+  const newNote = {
+    id: req.body.id || Date.now().toString(),
+    title: req.body.title || 'Untitled',
+    content: req.body.content || '',
+    date: req.body.date || new Date().toISOString().split('T')[0],
+    createdAt: req.body.createdAt || new Date().toISOString(),
+  };
   data.push(newNote);
   writeData('notes.json', data);
   res.json(newNote);
@@ -148,9 +194,9 @@ app.put('/api/notes/:id', (req, res) => {
   const data = readData('notes.json');
   const index = data.findIndex(n => n.id === req.params.id);
   if (index !== -1) {
-    data[index] = req.body;
+    data[index] = { ...data[index], ...req.body };
     writeData('notes.json', data);
-    res.json(req.body);
+    res.json(data[index]);
   } else {
     res.status(404).json({ error: 'Note not found' });
   }
