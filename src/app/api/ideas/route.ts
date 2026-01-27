@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
 
   const newIdea: Idea = {
     id: Date.now().toString(),
-    content: body.content,
+    title: body.title || '',
+    description: body.description || '',
     category: body.category || 'other',
     createdAt: new Date().toISOString(),
   };

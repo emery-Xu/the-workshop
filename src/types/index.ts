@@ -12,6 +12,7 @@ export interface Idea {
   id: string;
   title: string;
   description: string;
+  content?: string;
   category: 'tweet' | 'product' | 'other';
   createdAt: string;
 }
@@ -38,7 +39,7 @@ export interface NotesData {
 
 export interface Draft {
   id: string;
-  title: string;
+  title?: string;
   content: string;
   status: 'draft' | 'ready' | 'posted';
   author: 'zohan' | 'jarvis';
