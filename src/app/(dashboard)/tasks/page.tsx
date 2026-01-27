@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import { usePolling } from '@/hooks/use-polling';
-import { Task, TasksData } from '@/types';
+import { Task } from '@/types';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,12 +77,11 @@ export default function TasksPage() {
   });
 
   const fetchTasks = useCallback(async () => {
-    const res = await fetch('/api/tasks');
-    return res.json() as Promise<TasksData>;
+    return await apiClient.get('/api/tasks');
   }, []);
 
   const { data, refetch } = usePolling(fetchTasks, 2000);
-  const tasks = data?.tasks || [];
+  const tasks = data || [];
 
   const resetForm = () => {
     setFormData({ title: '', description: '', status: 'todo', assignee: 'jarvis' });
@@ -108,16 +108,12 @@ export default function TasksPage() {
     if (!formData.title.trim()) return;
 
     if (editingTask) {
-      await fetch('/api/tasks', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: editingTask.id, ...formData }),
-      });
+      await apiClient.put(`/api/tasks/${editingTask.id}`, { ...formData });
     } else {
-      await fetch('/api/tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+      await apiClient.post('/api/tasks', {
+        ...formData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
     }
 
@@ -127,16 +123,12 @@ export default function TasksPage() {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
+    await apiClient.delete(`/api/tasks/${id}`);
     refetch();
   };
 
   const handleStatusChange = async (task: Task, status: Task['status']) => {
-    await fetch('/api/tasks', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: task.id, status }),
-    });
+    await apiClient.put(`/api/tasks/${task.id}`, { ...task, status });
     refetch();
   };
 
