@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_VPS_API_URL || 'http://localhost:3001';
+const API_BASE = 'http://98.82.28.184:3001';
 
 export const apiClient = {
   async get(endpoint: string) {
