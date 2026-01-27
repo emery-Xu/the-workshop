@@ -10,7 +10,8 @@ export interface Task {
 
 export interface Idea {
   id: string;
-  content: string;
+  title: string;
+  description: string;
   category: 'tweet' | 'product' | 'other';
   createdAt: string;
 }
@@ -37,6 +38,7 @@ export interface NotesData {
 
 export interface Draft {
   id: string;
+  title: string;
   content: string;
   status: 'draft' | 'ready' | 'posted';
   author: 'zohan' | 'jarvis';
