@@ -4,20 +4,37 @@ const path = require('path');
 const app = express();
 const PORT = 3001;
 
+// 环境变量
+const API_KEY = process.env.API_KEY || 'workshop-api-key-emery-2024';
+const ALLOWED_ORIGINS = ['https://clawd-roan-eight.vercel.app', 'https://the-workshop-xi.vercel.app'];
+
 // 中间件
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS 设置（允许 Vercel 访问）
+// CORS 设置（仅允许指定域名）
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key');
+  res.header('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
   next();
 });
+
+// API Key 验证中间件
+const validateApiKey = (req, res, next) => {
+  const authKey = req.headers['x-api-key'];
+  if (authKey !== API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized', message: 'Invalid or missing API key' });
+  }
+  next();
+};
 
 // 读取数据文件的辅助函数
 const readData = (file) => {
@@ -48,11 +65,11 @@ const writeData = (file, data) => {
 // API Routes
 
 // Tasks
-app.get('/api/tasks', (req, res) => {
+app.get('/api/tasks', validateApiKey, (req, res) => {
   res.json(readData('tasks.json'));
 });
 
-app.post('/api/tasks', (req, res) => {
+app.post('/api/tasks', validateApiKey, (req, res) => {
   const data = readData('tasks.json');
   const newTask = req.body;
   newTask.id = newTask.id || Date.now().toString();
@@ -63,7 +80,7 @@ app.post('/api/tasks', (req, res) => {
   res.json(newTask);
 });
 
-app.put('/api/tasks/:id', (req, res) => {
+app.put('/api/tasks/:id', validateApiKey, (req, res) => {
   const data = readData('tasks.json');
   const index = data.findIndex(t => t.id === req.params.id);
   if (index !== -1) {
@@ -75,7 +92,7 @@ app.put('/api/tasks/:id', (req, res) => {
   }
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
+app.delete('/api/tasks/:id', validateApiKey, (req, res) => {
   const data = readData('tasks.json');
   const filtered = data.filter(t => t.id !== req.params.id);
   writeData('tasks.json', filtered);
@@ -83,7 +100,7 @@ app.delete('/api/tasks/:id', (req, res) => {
 });
 
 // Ideas
-app.get('/api/ideas', (req, res) => {
+app.get('/api/ideas', validateApiKey, (req, res) => {
   const data = readData('ideas.json');
   res.json(data.map(idea => ({
     id: idea.id || Date.now().toString(),
@@ -94,7 +111,7 @@ app.get('/api/ideas', (req, res) => {
   })));
 });
 
-app.post('/api/ideas', (req, res) => {
+app.post('/api/ideas', validateApiKey, (req, res) => {
   const data = readData('ideas.json');
   const newIdea = req.body;
   newIdea.id = newIdea.id || Date.now().toString();
@@ -104,7 +121,7 @@ app.post('/api/ideas', (req, res) => {
   res.json(newIdea);
 });
 
-app.delete('/api/ideas/:id', (req, res) => {
+app.delete('/api/ideas/:id', validateApiKey, (req, res) => {
   const data = readData('ideas.json');
   const filtered = data.filter(i => i.id !== req.params.id);
   writeData('ideas.json', filtered);
@@ -112,7 +129,7 @@ app.delete('/api/ideas/:id', (req, res) => {
 });
 
 // Drafts
-app.get('/api/drafts', (req, res) => {
+app.get('/api/drafts', validateApiKey, (req, res) => {
   const data = readData('drafts.json');
   res.json(data.map(draft => ({
     id: draft.id || Date.now().toString(),
@@ -125,7 +142,7 @@ app.get('/api/drafts', (req, res) => {
   })));
 });
 
-app.post('/api/drafts', (req, res) => {
+app.post('/api/drafts', validateApiKey, (req, res) => {
   const data = readData('drafts.json');
   const newDraft = {
     id: req.body.id || Date.now().toString(),
@@ -141,7 +158,7 @@ app.post('/api/drafts', (req, res) => {
   res.json(newDraft);
 });
 
-app.put('/api/drafts/:id', (req, res) => {
+app.put('/api/drafts/:id', validateApiKey, (req, res) => {
   const data = readData('drafts.json');
   const index = data.findIndex(d => d.id === req.params.id);
   if (index !== -1) {
@@ -157,7 +174,7 @@ app.put('/api/drafts/:id', (req, res) => {
   }
 });
 
-app.delete('/api/drafts/:id', (req, res) => {
+app.delete('/api/drafts/:id', validateApiKey, (req, res) => {
   const data = readData('drafts.json');
   const filtered = data.filter(d => d.id !== req.params.id);
   writeData('drafts.json', filtered);
@@ -165,7 +182,7 @@ app.delete('/api/drafts/:id', (req, res) => {
 });
 
 // Notes
-app.get('/api/notes', (req, res) => {
+app.get('/api/notes', validateApiKey, (req, res) => {
   const data = readData('notes.json');
   res.json(data.map(note => ({
     id: note.id || Date.now().toString(),
@@ -176,7 +193,7 @@ app.get('/api/notes', (req, res) => {
   })));
 });
 
-app.post('/api/notes', (req, res) => {
+app.post('/api/notes', validateApiKey, (req, res) => {
   const data = readData('notes.json');
   const newNote = {
     id: req.body.id || Date.now().toString(),
@@ -190,7 +207,7 @@ app.post('/api/notes', (req, res) => {
   res.json(newNote);
 });
 
-app.put('/api/notes/:id', (req, res) => {
+app.put('/api/notes/:id', validateApiKey, (req, res) => {
   const data = readData('notes.json');
   const index = data.findIndex(n => n.id === req.params.id);
   if (index !== -1) {
@@ -202,7 +219,7 @@ app.put('/api/notes/:id', (req, res) => {
   }
 });
 
-app.delete('/api/notes/:id', (req, res) => {
+app.delete('/api/notes/:id', validateApiKey, (req, res) => {
   const data = readData('notes.json');
   const filtered = data.filter(n => n.id !== req.params.id);
   writeData('notes.json', filtered);
@@ -216,4 +233,5 @@ app.get('/health', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`API server running on port ${PORT}`);
+  console.log(`API Key: ${API_KEY.substring(0, 8)}...`);
 });
