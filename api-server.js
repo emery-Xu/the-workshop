@@ -6,18 +6,14 @@ const PORT = 3001;
 
 // 环境变量
 const API_KEY = process.env.API_KEY || 'workshop-api-key-emery-2024';
-const ALLOWED_ORIGINS = ['https://clawd-roan-eight.vercel.app', 'https://the-workshop-xi.vercel.app'];
 
 // 中间件
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CORS 设置（仅允许指定域名）
+// CORS 设置（允许所有来源，临时调试）
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  }
+  res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-Key');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -27,10 +23,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// API Key 验证中间件
+// API Key 验证中间件（仅对 API 路由验证，不影响前端路由）
 const validateApiKey = (req, res, next) => {
   const authKey = req.headers['x-api-key'];
-  if (authKey !== API_KEY) {
+  // 如果请求是 API 路由（/api/*），验证 Key
+  if (req.path.startsWith('/api/') && authKey !== API_KEY) {
     return res.status(401).json({ error: 'Unauthorized', message: 'Invalid or missing API key' });
   }
   next();
@@ -62,7 +59,7 @@ const writeData = (file, data) => {
   }
 };
 
-// API Routes
+// API Routes（带验证）
 
 // Tasks
 app.get('/api/tasks', validateApiKey, (req, res) => {
@@ -226,7 +223,7 @@ app.delete('/api/notes/:id', validateApiKey, (req, res) => {
   res.json({ success: true });
 });
 
-// 健康检查
+// 健康检查（不需要验证）
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
